@@ -1,0 +1,10 @@
+Subindo o Airflow
+
+1- criar uma env python
+uv venv --python 3.11
+
+2- ativando a venv
+source .venv/bin/activate
+
+3- instalando o apache airflow na venv
+uv pip install apache-airflow==3.0.0
