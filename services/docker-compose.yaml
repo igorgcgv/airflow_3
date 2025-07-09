@@ -1,0 +1,53 @@
+version: '3.8' # Apenas uma vez no início do arquivo
+
+services:
+  # --- Serviço PostgreSQL ---
+  postgres: # Nome do serviço para o PostgreSQL
+    image: postgres:latest
+    container_name: my_postgres_db # Um nome mais descritivo para o container
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "5432:5432" # Expõe a porta 5432 do container para a porta 5432 do seu host
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Volume para persistir os dados do PostgreSQL
+    networks:
+      - my_network # Coloca o PostgreSQL na rede 'my_network'
+
+  # --- Serviço Mage.ai ---
+  mage: # Nome do serviço para o Mage.ai
+    image: mageai/mageai:latest # Imagem oficial do Mage.ai (note o 'mage-ai' no final)
+    container_name: mage_ai_container
+    ports:
+      - "6789:6789" # Expõe a porta 6789 do container para a porta 6789 do seu host
+    volumes:
+      - ./data:/home/src # Volume para persistir os projetos do Mage.ai no seu host
+    environment:
+      - PROJECT_NAME=mage_test
+      # Credenciais do PostgreSQL para o Mage.ai:
+      # O host é o nome do serviço do PostgreSQL dentro da mesma rede Docker Compose
+      - POSTGRES_DB_HOST=postgres # <<< Use o nome do serviço do Postgres aqui
+      - POSTGRES_DB_PORT=5432
+      - POSTGRES_DB_NAME=mydatabase
+      - POSTGRES_DB_USER=myuser
+      - POSTGRES_DB_PASSWORD=mypassword
+      # Se você for configurar a conexão dentro do Mage.ai via UI, essas variáveis
+      # não são estritamente necessárias aqui, mas são úteis para inicialização ou scripts.
+    command: bash -c "mage start mage_test"
+    restart: unless-stopped
+    depends_on: # Garante que o PostgreSQL inicie antes do Mage.ai
+      - postgres
+    networks:
+      - my_network # Coloca o Mage.ai na mesma rede 'my_network' que o PostgreSQL
+
+# --- Definição de Volumes para Persistência ---
+volumes:
+  postgres_data: # Volume nomeado para os dados do PostgreSQL
+  data: # Volume nomeado para os projetos do Mage.ai (ou um bind mount como no exemplo)
+
+# --- Definição da Rede Compartilhada ---
+networks:
+  my_network:
+    driver: bridge # Tipo de rede padrão para comunicação entre containers no mesmo host

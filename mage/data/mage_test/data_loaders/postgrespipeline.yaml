@@ -1,0 +1,10 @@
+config:
+  database: mydatabase
+  host: 127.0.0.1
+  password: mypassword
+  port: 5432
+  schema: product_sales
+  username: myuser
+  replication_slot: null
+  publication_name: null
+source: postgresql
